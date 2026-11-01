@@ -1,15 +1,23 @@
 # monitor-01
 
-Central monitoring server.
+Central monitoring server running on Docker Engine + Docker Compose.
 
-## Runtime
-Docker Engine + Docker Compose
+## Current Services
+
+### Prometheus
+- Image: `prom/prometheus:v3.15.1`
+- Port: `9090` (localhost only)
+- Configuration: `prometheus/prometheus.yml`
+- Persistent volume: `monitor-01_prometheus_data`
+- Retention: 15 days
+- Status: Running
 
 ## Planned Services
-- Prometheus
-- Alertmanager
+
 - Grafana
 - Loki
+- Alertmanager
 
 ## Next Step
-Deploy Prometheus using Docker Compose.
+
+Install Node Exporter to collect host metrics from `monitor-01` and `app-01`.
