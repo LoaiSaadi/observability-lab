@@ -14,3 +14,9 @@ scrape_configs:
           - "172.31.23.247:9100"
         labels:
           env: lab
+
+  - job_name: nginx
+    static_configs:
+      - targets: ["172.31.23.247:9113"]
+        labels:
+          env: lab
