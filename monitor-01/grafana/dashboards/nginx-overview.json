@@ -315,7 +315,7 @@
           },
           "editorMode": "code",
           "expr": "nginx_connections_active{job=\"nginx\"}",
-          "legendFormat": "172.31.23.247:9113",
+          "legendFormat": "{{instance}}",
           "range": true,
           "refId": "A"
         },

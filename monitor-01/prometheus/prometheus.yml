@@ -10,13 +10,19 @@ scrape_configs:
   - job_name: node
     static_configs:
       - targets:
-          - "172.31.2.33:9100"
-          - "172.31.23.247:9100"
+          - "172.31.4.172:9100"
+          - "172.31.33.174:9100"
         labels:
           env: lab
 
   - job_name: nginx
     static_configs:
-      - targets: ["172.31.23.247:9113"]
+      - targets: ["172.31.33.174:9113"]
+        labels:
+          env: lab
+
+  - job_name: telegraf
+    static_configs:
+      - targets: ["172.31.41.143:9273"]
         labels:
           env: lab
