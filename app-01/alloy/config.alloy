@@ -1,0 +1,36 @@
+local.file_match "nginx" {
+  path_targets = [
+    {
+      "__path__" = "/var/log/nginx/access.log",
+      "job"      = "nginx",
+      "log_type" = "access",
+      "host"     = constants.hostname,
+    },
+    {
+      "__path__" = "/var/log/nginx/error.log",
+      "job"      = "nginx",
+      "log_type" = "error",
+      "host"     = constants.hostname,
+    },
+  ]
+}
+
+loki.source.file "nginx" {
+  targets    = local.file_match.nginx.targets
+  forward_to = [loki.write.central.receiver]
+}
+
+loki.source.journal "system" {
+  labels = {
+    "job"  = "systemd-journal",
+    "host" = constants.hostname,
+  }
+
+  forward_to = [loki.write.central.receiver]
+}
+
+loki.write "central" {
+  endpoint {
+    url = "http://monitor-01:3100/loki/api/v1/push"
+  }
+}
