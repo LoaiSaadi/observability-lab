@@ -1,38 +1,34 @@
 # Learning Log
 
+This is a short summary of what I've worked on and learned while building my observability lab.
+
 ## Phase 1 — Infrastructure
 
 ### What I Did
 - Set up three AWS EC2 instances: `monitor-01`, `app-01`, and `app-02`.
-- Configured hostnames and `/etc/hosts` so the servers can communicate using names instead of IP addresses.
-- Set the timezone to `Asia/Jerusalem` on all servers.
-- Created SSH keys and tested connections from `monitor-01` to both application servers.
-- Configured AWS Security Groups and UFW to control network access.
-- Installed Docker Engine and Docker Compose on `monitor-01`.
-- Connected the monitoring server to my private GitHub repository using SSH.
+- Configured hostnames, SSH access, Security Groups, UFW, and timezones.
+- Installed Docker and Docker Compose on the monitoring server.
+- Connected the project to a private GitHub repository.
 
 ### What I Learned
-- Security Groups and UFW are two different layers of network security.
-- SSH keys allow secure connections between servers without using account passwords.
-- Keeping server configurations in Git makes it easier to move the setup to new machines.
+- Security Groups and UFW provide different layers of network security.
+- SSH keys make communication between servers easier and more secure.
+- Keeping configurations in Git helps me recreate the setup later.
 
 ---
 
 ## Phase 2 — Prometheus
 
 ### What I Did
-- Deployed Prometheus using Docker Compose.
-- Configured it to collect metrics every 15 seconds.
-- Added a persistent Docker volume and set data retention to 15 days.
-- Accessed Prometheus using an SSH tunnel instead of exposing it publicly.
-- Tested PromQL queries such as `up`, `rate()`, and `prometheus_tsdb_head_series`.
-- Validated the configuration with `promtool`.
-- Tested reloading the configuration without restarting the container.
+- Deployed Prometheus with Docker Compose.
+- Set up 15-second scraping, a persistent volume, and 15-day retention.
+- Accessed Prometheus through an SSH tunnel.
+- Tested PromQL, configuration validation, and configuration reloads.
 
 ### What I Learned
-- Prometheus collects metrics by scraping configured targets.
-- PromQL is used to query and analyze the collected metrics.
-- Docker volumes keep the monitoring data even when containers are removed and recreated.
+- Prometheus collects and stores metrics from configured targets.
+- PromQL helps me query and analyze those metrics.
+- Docker volumes keep data even when containers are recreated.
 
 ---
 
@@ -40,53 +36,42 @@
 
 ### What I Did
 - Installed Node Exporter on `monitor-01` and `app-01`.
-- Created a dedicated Linux user for the service.
-- Configured Node Exporter to run automatically using systemd.
-- Exposed system metrics on port `9100`.
-- Allowed access from the monitoring server using UFW and AWS Security Groups.
-- Added both servers to Prometheus and confirmed their targets were UP.
+- Configured it as a systemd service on port `9100`.
+- Updated firewall rules and added both servers to Prometheus.
 
 ### What I Learned
-- Node Exporter collects Linux system metrics such as CPU, memory, disk, and network usage.
-- Prometheus connects to Node Exporter to collect these metrics.
-- A running service doesn't always mean Prometheus can reach it. Firewall rules and network connectivity also matter.
+- Node Exporter provides Linux system metrics like CPU, memory, disk, and network usage.
+- A service can be running but still unreachable because of firewall or network rules.
 
 ---
 
 ## Phase 4 — Grafana
 
 ### What I Did
-- Deployed Grafana using Docker Compose.
-- Connected Grafana to Prometheus as its data source.
-- Created an Infrastructure Overview dashboard to monitor the servers.
-- Configured dashboards and data sources using provisioning files.
-- Stored dashboard JSON files in Git.
-- Used a persistent Docker volume to keep Grafana data.
+- Deployed Grafana and connected it to Prometheus.
+- Created an Infrastructure Overview dashboard.
+- Configured data sources and dashboards using provisioning files.
+- Stored the dashboard JSON files in Git.
 
 ### What I Learned
-- Prometheus collects and stores metrics, while Grafana helps visualize them.
-- File provisioning lets me manage dashboards through configuration files instead of creating everything manually.
-- Docker bind mounts make the dashboard files available inside the Grafana container.
-- Grafana automatically checks for dashboard file changes and updates the UI.
+- Grafana helps visualize metrics collected by Prometheus.
+- File provisioning lets me manage dashboards through Git instead of relying only on the UI.
+- Bind mounts allow Grafana to read dashboard files directly from the server.
 
 ---
 
 ## Phase 5 — Nginx Monitoring
 
 ### What I Did
-- Installed Nginx on `app-01` and `app-02`.
-- Configured the Nginx status endpoint locally on port `8080`.
-- Installed Nginx Prometheus Exporter on `app-01`.
-- Configured the exporter as a systemd service on port `9113`.
-- Allowed monitoring access only from `monitor-01`.
-- Added the Nginx target to Prometheus and confirmed it was UP.
-- Created an Nginx dashboard in Grafana.
+- Installed Nginx on both application servers.
+- Enabled `stub_status` locally.
+- Installed Nginx Prometheus Exporter on `app-01`, using port `9113`.
+- Added Nginx monitoring to Prometheus and Grafana.
 
 ### What I Learned
-- Nginx provides basic connection and request statistics through `stub_status`.
-- Nginx Prometheus Exporter converts those statistics into metrics that Prometheus understands.
-- I can check whether Nginx is working by querying the `nginx_up` metric.
-- The status endpoint should stay local, while the exporter provides metrics to the monitoring server.
+- `stub_status` provides basic Nginx statistics.
+- The exporter converts those statistics into Prometheus metrics.
+- I can use `nginx_up` to check whether Nginx is responding.
 
 ---
 
@@ -94,53 +79,55 @@
 
 ### What I Did
 - Installed Telegraf on `app-02`.
-- Replaced the large default configuration with a simple configuration containing only what I needed.
-- Configured seven inputs: CPU, memory, disk, disk I/O, network, system, and Nginx.
-- Set the collection interval to 15 seconds.
-- Configured Telegraf to expose Prometheus metrics on port `9273`.
-- Tested the configuration and confirmed the service was running.
-- Added Telegraf as a Prometheus target and confirmed it was UP.
-- Created a `Telegraf Hosts` dashboard with CPU, memory, disk, and Nginx connection graphs.
-- Saved the Telegraf configuration and dashboards in Git.
-
-### Node Exporter vs Telegraf
-
-| Node Exporter | Telegraf |
-|---|---|
-| Mainly collects Linux system metrics | Collects system and application metrics |
-| Exposes metrics on port `9100` in my lab | Exposes metrics on port `9273` in my lab |
-| Simple and focused on host monitoring | More flexible through input plugins |
-| Example: `node_cpu_seconds_total` | Example: `cpu_usage_idle` |
+- Configured CPU, memory, disk, disk I/O, network, system, and Nginx inputs.
+- Exposed metrics on port `9273` and added the target to Prometheus.
+- Created a Telegraf dashboard in Grafana.
 
 ### What I Learned
-- Both tools can provide system metrics, but they use different metric names.
-- Node Exporter is a simple choice when I only need Linux host metrics.
-- Telegraf is useful when I want to collect system and application metrics using a single agent.
-- I used Node Exporter on `monitor-01` and `app-01`, and Telegraf on `app-02`.
-- Prometheus can collect metrics from both tools at the same time.
+- Node Exporter is a simple choice for Linux host metrics.
+- Telegraf is more flexible and supports system and application metrics through plugins.
+- Both tools work with Prometheus, but some metric names are different.
 
 ---
 
-## Migration to the New EC2 Instances
-
-I started this lab on temporary EC2 instances and later moved the setup to three new instances.
-
-| New EC2 Instance | Hostname |
-|---|---|
-| `Loai-training-monitoring` | `monitor-01` |
-| `Loai-training-agent-1` | `app-01` |
-| `Loai-training-agent-2` | `app-02` |
+## Phase 7 — Loki and Grafana Alloy
 
 ### What I Did
-- Reconfigured the hostnames, networking, SSH access, and firewall rules.
-- Installed Docker and restored the monitoring setup from GitHub.
-- Updated the Prometheus targets to use the new private IP addresses.
-- Reinstalled the exporters and Telegraf on the new servers.
-- Confirmed all five Prometheus targets were UP.
-- Tested `docker compose down` followed by `docker compose up -d`.
-- Confirmed that Prometheus data and Grafana dashboards were still available after recreating the containers.
+- Deployed Loki with Docker Compose, persistent storage, and 7-day log retention.
+- Connected Loki to Grafana as a second data source.
+- Installed Alloy on `app-01` and `app-02`.
+- Configured Alloy to collect Nginx access/error logs and systemd journal logs.
+- Verified that logs from both servers reach Loki.
+- Practiced LogQL to find HTTP 404 errors and count requests by status code.
+- Added Nginx Logs and Requests by Status Code panels to the Nginx dashboard.
+
+### What I Learned
+- Prometheus handles metrics, while Loki handles logs.
+- Alloy collects and sends logs to Loki.
+- Nginx logs show HTTP requests, while systemd journal logs show system and service events.
+- LogQL lets me filter logs and turn them into useful graphs.
+- Labels like `host`, `job`, and `log_type` make it easy to separate data from different servers.
+- Alloy can also collect host metrics, potentially replacing a separate Node Exporter service. I tested the collector briefly but skipped the Remote Write bonus.
+
+---
+
+## Migration to New EC2 Instances
+
+I originally started this lab on temporary EC2 instances and later moved it to three new servers in another AWS region.
+
+### What I Did
+- Reconfigured SSH, hostnames, networking, and firewall rules.
+- Restored the monitoring setup using the files stored in Git.
+- Updated Prometheus targets to use the new private IPs.
+- Reinstalled the exporters and Telegraf.
+- Verified that all five Prometheus targets were UP.
+- Tested container recreation and confirmed the monitoring data remained available.
+
+### What I Learned
+- Having the setup in Git makes migration much easier.
+- Server addresses and access rules need to be reviewed when moving to new infrastructure.
+- Persistent volumes help protect monitoring data when containers are recreated.
 
 ### Notes
-- The monitoring server currently has a small root disk. I decided to leave it unchanged for now.
-- I want to keep the setup easy to recreate on another server using Git and configuration files.
-- The migration changes are in the `feat/migrate-new-ec2` branch, with a PR opened for merging into `main`.
+- The EC2 instances are temporary until we move to the real servers.
+- I'm keeping the configuration simple and reusable so the lab will be easy to rebuild later.
