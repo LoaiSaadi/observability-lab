@@ -10,6 +10,7 @@ services:
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
+      - ./prometheus/rules:/etc/prometheus/rules:ro
 
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
@@ -52,7 +53,25 @@ services:
     command:
       - "-config.file=/etc/loki/loki.yml"
 
+  alertmanager:
+    image: prom/alertmanager:v0.34.2
+    container_name: alertmanager
+    restart: unless-stopped
+
+    ports:
+      - "127.0.0.1:9093:9093"
+
+    volumes:
+      - alertmanager_data:/alertmanager
+      - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - ./alertmanager/secrets:/etc/alertmanager/secrets:ro
+
+    command:
+      - "--config.file=/etc/alertmanager/alertmanager.yml"
+      - "--storage.path=/alertmanager"
+
 volumes:
   prometheus_data:
   grafana_data:
   loki_data:
+  alertmanager_data:

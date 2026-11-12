@@ -11,3 +11,5 @@
 
 # Local files
 .DS_Store
+
+/monitor-01/alertmanager/secrets/
