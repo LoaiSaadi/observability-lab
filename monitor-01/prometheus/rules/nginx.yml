@@ -1,0 +1,20 @@
+groups:
+  - name: nginx
+    rules:
+      - alert: NginxDown
+        expr: nginx_up{job="nginx"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Nginx down for {{ $labels.instance }}"
+          description: "Nginx exporter reports that Nginx is down"
+
+      - alert: TelegrafNginxDown
+        expr: (up{job="telegraf",instance="172.31.41.143:9273"} == 1) unless on(job,instance) nginx_active{job="telegraf",instance="172.31.41.143:9273"}
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Nginx down on app-02"
+          description: "Telegraf is reachable but Nginx metrics are missing"

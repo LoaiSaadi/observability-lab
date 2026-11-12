@@ -1,0 +1,47 @@
+groups:
+  - name: infra
+    rules:
+      - alert: InstanceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.instance }} is down"
+          description: "{{ $labels.job }} unreachable for more than 1 minute"
+
+      - alert: HostHighCpu
+        expr: 100 * (1 - avg by(instance) (rate(node_cpu_seconds_total{job="node",mode="idle"}[5m]))) > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is above 85% for 5 minutes"
+
+      - alert: HostHighMemory
+        expr: 100 * (1 - node_memory_MemAvailable_bytes{job="node"} / node_memory_MemTotal_bytes{job="node"}) > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage is above 90% for 5 minutes"
+
+      - alert: HostDiskSpaceLow
+        expr: 100 * node_filesystem_avail_bytes{job="node",mountpoint="/"} / node_filesystem_size_bytes{job="node",mountpoint="/"} < 15
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low disk space on {{ $labels.instance }}"
+          description: "Root filesystem has less than 15% available space"
+
+      - alert: HostDiskSpaceCritical
+        expr: 100 * node_filesystem_avail_bytes{job="node",mountpoint="/"} / node_filesystem_size_bytes{job="node",mountpoint="/"} < 5
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical disk space on {{ $labels.instance }}"
+          description: "Root filesystem has less than 5% available space"
