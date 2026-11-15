@@ -29,7 +29,7 @@
         "y": 0
       },
       "id": 10,
-      "title": "Stat Panels",
+      "title": "Host Overview",
       "type": "row"
     },
     {
@@ -327,7 +327,7 @@
         "y": 17
       },
       "id": 11,
-      "title": "Time Series",
+      "title": "Resource Utilization & Performance",
       "type": "row"
     },
     {
@@ -843,6 +843,43 @@
       ],
       "title": "System Load",
       "type": "timeseries"
+    },
+    {
+      "id": 13,
+      "type": "row",
+      "title": "Alerting & Incidents",
+      "collapsed": false,
+      "panels": [],
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 42
+      }
+    },
+    {
+      "id": 12,
+      "type": "alertlist",
+      "title": "Active Alerts",
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 43
+      },
+      "options": {
+        "viewMode": "list",
+        "groupMode": "default",
+        "maxItems": 30,
+        "dashboardAlerts": false,
+        "stateFilter": {
+          "firing": true,
+          "pending": true,
+          "noData": true,
+          "error": true,
+          "normal": false
+        }
+      }
     }
   ],
   "preload": false,
@@ -901,6 +938,6 @@
   },
   "timezone": "browser",
   "title": "Infrastructure Overview",
-  "version": 14,
+  "version": 16,
   "uid": "lo72bqt"
 }

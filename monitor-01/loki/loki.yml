@@ -35,3 +35,19 @@ compactor:
 
 analytics:
   reporting_enabled: false
+
+ruler:
+  storage:
+    type: local
+    local:
+      directory: /etc/loki/rules
+
+  rule_path: /loki/ruler-tmp
+
+  alertmanager_url: http://alertmanager:9093
+
+  ring:
+    kvstore:
+      store: inmemory
+
+  enable_api: true

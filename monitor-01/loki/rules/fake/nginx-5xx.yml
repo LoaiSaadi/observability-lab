@@ -1,0 +1,23 @@
+groups:
+  - name: nginx-log-alerts
+    interval: 1m
+    rules:
+      - alert: NginxHigh5xxLogs
+        expr: |
+          sum by (host) (
+            count_over_time(
+              {job="nginx", log_type="access"}
+              |~ `"[^"]+" 5[0-9]{2} `
+              [5m]
+            )
+          ) > 20
+        labels:
+          severity: warning
+          env: lab
+          source: loki
+          job: nginx
+          service: nginx
+          instance: '{{ $labels.host }}'
+        annotations:
+          summary: "High NGINX 5xx errors on {{ $labels.host }}"
+          description: "Detected {{ $value }} NGINX 5xx log entries in 5 minutes on {{ $labels.host }}"

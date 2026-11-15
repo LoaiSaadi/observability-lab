@@ -49,7 +49,7 @@ services:
     volumes:
       - ./loki/loki.yml:/etc/loki/loki.yml:ro
       - loki_data:/loki
-
+      - ./loki/rules:/etc/loki/rules:ro
     command:
       - "-config.file=/etc/loki/loki.yml"
 
