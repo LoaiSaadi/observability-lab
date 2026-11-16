@@ -11,12 +11,20 @@ services:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
       - ./prometheus/rules:/etc/prometheus/rules:ro
+      - ./prometheus/secrets/web.yml:/etc/prometheus/web.yml:ro
+      - ./prometheus/secrets/scrape-password:/etc/prometheus/scrape-password:ro
+      - ./alertmanager/secrets/client-password:/etc/prometheus/alertmanager-password:ro
+      - ./prometheus/secrets/app-01.crt:/etc/prometheus/app-01.crt:ro
+      - ./prometheus/secrets/app-01-password:/etc/prometheus/app-01-password:ro
+      - ./prometheus/secrets/monitor-01.crt:/etc/prometheus/monitor-01.crt:ro
+      - ./prometheus/secrets/monitor-01-password:/etc/prometheus/monitor-01-password:ro
 
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.path=/prometheus"
       - "--storage.tsdb.retention.time=15d"
       - "--web.enable-lifecycle"
+      - "--web.config.file=/etc/prometheus/web.yml"
 
   grafana:
     image: grafana/grafana:13.2.3
@@ -29,6 +37,12 @@ services:
     environment:
       GF_SECURITY_ADMIN_USER: ${GF_SECURITY_ADMIN_USER:?Admin username required}
       GF_SECURITY_ADMIN_PASSWORD: ${GF_SECURITY_ADMIN_PASSWORD:?Admin password required}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_SECURITY_COOKIE_SECURE: "true"
+
+      PROMETHEUS_BASIC_AUTH_PASSWORD: ${PROMETHEUS_BASIC_AUTH_PASSWORD:?Password required}
+      ALERTMANAGER_BASIC_AUTH_PASSWORD: ${ALERTMANAGER_BASIC_AUTH_PASSWORD:?Password required}
 
     volumes:
       - grafana_data:/var/lib/grafana
@@ -46,12 +60,17 @@ services:
     ports:
       - "172.31.4.172:3100:3100"
 
+    environment:
+      ALERTMANAGER_BASIC_AUTH_PASSWORD: ${ALERTMANAGER_BASIC_AUTH_PASSWORD:?Password required}
+
     volumes:
       - ./loki/loki.yml:/etc/loki/loki.yml:ro
       - loki_data:/loki
       - ./loki/rules:/etc/loki/rules:ro
+
     command:
       - "-config.file=/etc/loki/loki.yml"
+      - "-config.expand-env=true"
 
   alertmanager:
     image: prom/alertmanager:v0.34.2
@@ -69,6 +88,7 @@ services:
     command:
       - "--config.file=/etc/alertmanager/alertmanager.yml"
       - "--storage.path=/alertmanager"
+      - "--web.config.file=/etc/alertmanager/secrets/web.yml"
 
 volumes:
   prometheus_data:
