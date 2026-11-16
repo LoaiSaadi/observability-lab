@@ -13,3 +13,4 @@
 .DS_Store
 
 /monitor-01/alertmanager/secrets/
+/monitor-01/prometheus/secrets/
