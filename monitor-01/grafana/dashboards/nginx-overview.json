@@ -95,8 +95,8 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "nginx_up{job=\"nginx\"}",
-          "legendFormat": "__auto",
+          "expr": "nginx_up{job=\"nginx\",host=~\"${host:regex}\"} or (nginx_active{job=\"telegraf\",host=~\"${host:regex}\"} * 0 + 1)",
+          "legendFormat": "{{host}}",
           "range": true,
           "refId": "A"
         }
@@ -218,8 +218,8 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "rate(nginx_http_requests_total{job=\"nginx\"}[1m])",
-          "legendFormat": "HTTP Requests",
+          "expr": "rate(nginx_http_requests_total{job=\"nginx\",host=~\"${host:regex}\"}[1m]) or rate(nginx_requests{job=\"telegraf\",host=~\"${host:regex}\"}[1m])",
+          "legendFormat": "{{host}}",
           "range": true,
           "refId": "A"
         }
@@ -314,30 +314,10 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "nginx_connections_active{job=\"nginx\"}",
-          "legendFormat": "{{instance}}",
+          "expr": "nginx_connections_active{job=\"nginx\",host=~\"${host:regex}\"} or nginx_active{job=\"telegraf\",host=~\"${host:regex}\"}",
+          "legendFormat": "{{host}}",
           "range": true,
           "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "expr": "",
-          "instant": false,
-          "range": true,
-          "refId": "B"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "expr": "",
-          "instant": false,
-          "range": true,
-          "refId": "C"
         }
       ],
       "title": "Active Connections",
@@ -430,10 +410,10 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "nginx_connections_reading{job=\"nginx\"}",
-          "legendFormat": "Reading",
+          "expr": "nginx_connections_reading{job=\"nginx\",host=~\"${host:regex}\"} or nginx_reading{job=\"telegraf\",host=~\"${host:regex}\"}",
+          "legendFormat": "{{host}} - Reading",
           "range": true,
-          "refId": "Reading"
+          "refId": "A"
         },
         {
           "datasource": {
@@ -441,11 +421,10 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "nginx_connections_writing{job=\"nginx\"}",
-          "instant": false,
-          "legendFormat": "Writing",
+          "expr": "nginx_connections_writing{job=\"nginx\",host=~\"${host:regex}\"} or nginx_writing{job=\"telegraf\",host=~\"${host:regex}\"}",
+          "legendFormat": "{{host}} - Writing",
           "range": true,
-          "refId": "Writing"
+          "refId": "B"
         },
         {
           "datasource": {
@@ -453,11 +432,10 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "nginx_connections_waiting{job=\"nginx\"}",
-          "instant": false,
-          "legendFormat": "Waiting",
+          "expr": "nginx_connections_waiting{job=\"nginx\",host=~\"${host:regex}\"} or nginx_waiting{job=\"telegraf\",host=~\"${host:regex}\"}",
+          "legendFormat": "{{host}} - Waiting",
           "range": true,
-          "refId": "Waiting"
+          "refId": "C"
         }
       ],
       "title": "Nginx Connection States",
@@ -550,10 +528,10 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "nginx_connections_accepted{job=\"nginx\"}",
-          "legendFormat": "Accepted Connections",
+          "expr": "nginx_connections_accepted{job=\"nginx\",host=~\"${host:regex}\"} or nginx_accepts{job=\"telegraf\",host=~\"${host:regex}\"}",
+          "legendFormat": "{{host}} - Accepted",
           "range": true,
-          "refId": "Accepted Connections"
+          "refId": "A"
         },
         {
           "datasource": {
@@ -561,11 +539,10 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "nginx_connections_handled{job=\"nginx\"}",
-          "instant": false,
-          "legendFormat": "Handled Connections",
+          "expr": "nginx_connections_handled{job=\"nginx\",host=~\"${host:regex}\"} or nginx_handled{job=\"telegraf\",host=~\"${host:regex}\"}",
+          "legendFormat": "{{host}} - Handled",
           "range": true,
-          "refId": "Handled Connections"
+          "refId": "B"
         }
       ],
       "title": "Accepted vs Handled Connections",
@@ -583,7 +560,7 @@
         {
           "direction": "backward",
           "editorMode": "code",
-          "expr": "{job=\"nginx\", host=\"app-01\"}",
+          "expr": "{job=\"nginx\",host=~\"${host:regex}\"} | line_format `[{{.host}}] {{ __line__ }}`",
           "queryType": "range",
           "refId": "A",
           "datasource": {
@@ -624,7 +601,8 @@
         "w": 24,
         "x": 0,
         "y": 24
-      }
+      },
+      "description": "NGINX access and error logs from both servers."
     },
     {
       "id": 7,
@@ -638,8 +616,8 @@
         {
           "direction": "backward",
           "editorMode": "code",
-          "expr": "sum by (status) (\n  count_over_time(\n    {job=\"nginx\", host=\"app-01\", log_type=\"access\"}\n    | pattern `<ip> - - <_> \"<method> <path> <_>\" <status> <size> <_>`\n    [1m]\n  )\n)",
-          "legendFormat": "{{status}}",
+          "expr": "sum by (host, status) (\n      count_over_time(\n        {job=\"nginx\",host=~\"${host:regex}\",log_type=\"access\"}\n        | pattern `<ip> - - <_> \"<method> <path> <_>\" <status> <size> <_>`\n        [1m]\n      )\n    )",
+          "legendFormat": "{{host}} - {{status}}",
           "queryType": "range",
           "refId": "A",
           "datasource": {
@@ -750,5 +728,23 @@
   "title": "Nginx Overview",
   "version": 6,
   "uid": "lo4cpbj",
-  "id": null
+  "id": null,
+  "templating": {
+    "list": [
+      {
+        "name": "host",
+        "label": "Host",
+        "type": "custom",
+        "query": "app-01,app-02",
+        "multi": true,
+        "includeAll": true,
+        "allValue": "app-01|app-02",
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "options": []
+      }
+    ]
+  }
 }

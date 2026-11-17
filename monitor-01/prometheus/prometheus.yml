@@ -72,6 +72,7 @@ scrape_configs:
       - targets: ["172.31.33.174:9113"]
         labels:
           env: lab
+          host: app-01
 
     relabel_configs:
       - source_labels: [__address__]
