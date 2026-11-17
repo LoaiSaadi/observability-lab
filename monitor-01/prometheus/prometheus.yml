@@ -80,6 +80,17 @@ scrape_configs:
         target_label: host_ip
         replacement: '$1'
 
+  - job_name: alertmanager
+    basic_auth:
+      username: alerting
+      password_file: /etc/prometheus/alertmanager-password
+    static_configs:
+      - targets: ["alertmanager:9093"]
+
+  - job_name: loki
+    static_configs:
+      - targets: ["loki:3100"]
+
   - job_name: telegraf
     static_configs:
       - targets: ["172.31.41.143:9273"]
