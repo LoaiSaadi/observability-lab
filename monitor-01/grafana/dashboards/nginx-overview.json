@@ -95,14 +95,16 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "nginx_up{job=\"nginx\",host=~\"${host:regex}\"} or (nginx_active{job=\"telegraf\",host=~\"${host:regex}\"} * 0 + 1)",
+          "expr": "nginx_up{job=\"nginx\",host=~\"${host:regex}\"}\nor\n(\n  http_response_result_code{\n    job=\"telegraf\",\n    host=~\"${host:regex}\"\n  } == bool 0\n)",
           "legendFormat": "{{host}}",
-          "range": true,
-          "refId": "A"
+          "range": false,
+          "refId": "A",
+          "instant": true
         }
       ],
       "title": "Nginx Status",
-      "type": "stat"
+      "type": "stat",
+      "description": "NGINX health: NGINX Exporter on app-01 and HTTP Response check on app-02."
     },
     {
       "datasource": {

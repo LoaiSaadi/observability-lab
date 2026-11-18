@@ -11,10 +11,10 @@ groups:
           description: "Nginx exporter reports that Nginx is down"
 
       - alert: TelegrafNginxDown
-        expr: (up{job="telegraf",instance="172.31.41.143:9273"} == 1) unless on(job,instance) nginx_active{job="telegraf",instance="172.31.41.143:9273"}
+        expr: http_response_result_code{job="telegraf",host="app-02"} != 0
         for: 1m
         labels:
           severity: critical
         annotations:
           summary: "Nginx down on app-02"
-          description: "Telegraf is reachable but Nginx metrics are missing"
+          description: "NGINX HTTP health check failed on app-02"
